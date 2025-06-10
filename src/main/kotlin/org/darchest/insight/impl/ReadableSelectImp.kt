@@ -110,7 +110,6 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		builder.append("\n")
 		builder.append("FROM ")
 		source.writeSql(builder, vendor, params)
-		builder.append("\n")
 
 		writeJoins(builder, vendor, joins, params)
 		writeWhere(builder, vendor, whereExpr, params)
@@ -174,9 +173,8 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 
 	private suspend fun writeJoins(builder: StringBuilder, vendor: Vendor, joins: Collection<Join<*>>, params: MutableList<SqlValue<*, *>>) {
 		for (join in joins) {
-			builder.append("\t")
+			builder.append("\n\t")
 			join.writeSql(builder, vendor, params)
-			builder.append("\n")
 		}
 	}
 
@@ -185,33 +183,29 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 			return
 		if (!vendor.isSqlBoolean(where))
 			throw RuntimeException("Where expr result isn't boolean")
-		builder.append("WHERE ")
+		builder.append("\nWHERE ")
 		where.writeSql(builder, vendor, params)
-		builder.append("\n")
 	}
 
 	private suspend fun writeOrder(builder: StringBuilder, vendor: Vendor, order: SqlPartsArray<SortInfo>, params: MutableList<SqlValue<*, *>>) {
 		if (order.isEmpty())
 			return
-		builder.append("ORDER BY ")
+		builder.append("\nORDER BY ")
 		order.writeSql(builder, vendor, params)
-		builder.append("\n")
 	}
 
 	private fun writeLimit(builder: StringBuilder, vendor: Vendor, limit: Long?) {
 		if (limit == null)
 			return
-		builder.append("LIMIT ")
+		builder.append("\nLIMIT ")
 		builder.append(limit)
-		builder.append("\n")
 	}
 
 	private fun writeOffset(builder: StringBuilder, vendor: Vendor, offset: Long?) {
 		if (offset == null)
 			return
-		builder.append("OFFSET ")
+		builder.append("\nOFFSET ")
 		builder.append(offset)
-		builder.append("\n")
 	}
 
 	override var connection: Connection? = null

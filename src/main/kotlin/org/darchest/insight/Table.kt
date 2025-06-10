@@ -11,7 +11,7 @@ abstract class Table(sqlName: String): SqlDataSource(sqlName) {
 
 	fun registerColumn(column: TableColumn<*, *>) {
 		if (columns.any { it.name == column.name })
-			throw RuntimeException("Column by this name already registered in this table")
+			throw RuntimeException("Column by name '${column.name}' already registered in table '$sqlName'")
 		columns.add(column)
 		column.owner = this
 	}
