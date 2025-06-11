@@ -15,7 +15,7 @@ class CreateTable(val table: Table): SqlPrintable {
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
 		builder.append("CREATE TABLE IF NOT EXISTS ")
 		table.writeSql(builder, vendor, params)
-		builder.append("\r\n(\r\n\t")
+		builder.append("\n(\n\t")
 		val cols = table.columns()
 		val iter = cols.iterator()
 		if (!iter.hasNext())
@@ -24,16 +24,16 @@ class CreateTable(val table: Table): SqlPrintable {
 		writeColumn(col, builder, vendor, params)
 		while(iter.hasNext()) {
 			col = iter.next()
-			builder.append(",\r\n\t")
+			builder.append(",\n\t")
 			writeColumn(col, builder, vendor, params)
 		}
 		val consts = table.constraints().iterator()
 		while (consts.hasNext()) {
 			val c = consts.next()
-			builder.append(",\r\n\t")
+			builder.append(",\n\t")
 			c.writeSql(builder, vendor, params)
 		}
-		builder.append("\r\n);")
+		builder.append("\n);")
 	}
 
 	private suspend fun writeColumn(col: TableColumn<*, *>, builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
