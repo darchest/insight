@@ -4,6 +4,7 @@ val apachePoiVersion = "5.3.0"
 plugins {
     kotlin("jvm") version "2.0.10"
     `java-library`
+    `maven-publish`
 }
 
 group = "org.darchest"
@@ -28,4 +29,13 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(8)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+    repositories { mavenLocal() }
 }
