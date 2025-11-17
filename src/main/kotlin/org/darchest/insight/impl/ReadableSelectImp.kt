@@ -221,7 +221,7 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		val statement = connection.prepareStatement(sql)
 		var ind = 0
 		params.forEach {
-			SqlTypeConverter.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
+			SqlTypeConvertersRegistry.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
 		}
 		this.connection = connection
 		logger.trace { "Prepared statement SELECT:\n${statement}" }

@@ -36,7 +36,7 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(val name: String, javaClass
 			throw RuntimeException("Value $codeName isn't set")
 		if (state == State.VALUE_SET)
 			return settedValue
-		return SqlTypeConverter.sqlToJava(sqlClass, javaClass, resultSet!!, resultSetInd!!) as? javaType?
+		return SqlTypeConvertersRegistry.sqlToJava(sqlClass, javaClass, resultSet!!, resultSetInd!!) as? javaType?
 	}
 
 	operator fun invoke(value: javaType?) {

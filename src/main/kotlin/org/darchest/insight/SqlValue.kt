@@ -32,7 +32,7 @@ abstract class SqlValue<javaType: Any, sqlT: SqlType>(val javaClass: Class<javaT
 	open suspend fun getValue(): javaType? {
 		if (state == State.NOT_SET)
 			throw RuntimeException("Value isn't set")
-		return SqlTypeConverter.sqlToJava(sqlClass, javaClass, resultSet!!, resultSetInd!!) as? javaType?
+		return SqlTypeConvertersRegistry.sqlToJava(sqlClass, javaClass, resultSet!!, resultSetInd!!) as? javaType?
 	}
 
 	suspend fun getAsAny(): Any? = getValue()

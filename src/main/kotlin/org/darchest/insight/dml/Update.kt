@@ -69,7 +69,7 @@ class Update<T: Table>(val table: T): SqlPrintable {
 		val statement = connection.prepareStatement(sql)
 		var ind = 0
 		params.forEach {
-			SqlTypeConverter.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
+			SqlTypeConvertersRegistry.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
 		}
 		logger.trace { "Prepared statement UPDATE:\n${statement}" }
 		val res = statement.executeUpdate()

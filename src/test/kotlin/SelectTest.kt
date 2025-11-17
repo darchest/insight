@@ -26,6 +26,32 @@ class SelectTest {
         val comments by JoinDelegate(::CommentTable, { t -> t.userId eq id })
     }
 
+    class PublicUserTable : PostgresTable("users") {
+
+        override val schemaName: String
+            get() = "public"
+
+        val id by UUIDCol("id")
+
+        val string by VarCharCol("string_col")
+
+        val string10 by VarCharCol("string_col_10", 10)
+
+        val comments by JoinDelegate(::DepCommentTable, { t -> t.userId eq id })
+    }
+
+    class DepCommentTable(): PostgresTable("comments") {
+
+        var depName: String = ""
+
+        override val schemaName: String
+            get() = "dep_$depName"
+
+        val id by UUIDCol("id")
+
+        val userId by UUIDCol("user_id")
+    }
+
     @Test
     fun sql_one_table_fields() = runBlocking {
         val tbl = UserTable()
@@ -98,6 +124,23 @@ class SelectTest {
             |ORDER BY T0."string_col" DESC
             |LIMIT 10
             |OFFSET 1
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_schemas_two_tables_fields() = runBlocking {
+        val tbl = PublicUserTable()
+        tbl.comments().depName = "main"
+
+        val cursor = select(tbl) {
+            fields(tbl.id, tbl.string, tbl.string10, tbl.comments().id)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |FROM public."users" T0
+	        |	INNER JOIN dep_main."comments" T1 ON T1."user_id" = T0."id"
         """.trimMargin(), sql)
     }
 }

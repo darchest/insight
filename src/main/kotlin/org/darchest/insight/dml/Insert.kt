@@ -66,7 +66,7 @@ class Insert: SqlPrintable {
 
 			var ind = 0
 			params.forEach {
-				SqlTypeConverter.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
+				SqlTypeConvertersRegistry.javaToPrepSql(it.javaClass, it.sqlClass, statement, ++ind, it.getValue())
 			}
 			logger.trace { "Prepared statement Insert:\n${statement}" }
 			cnt += statement.executeUpdate()
