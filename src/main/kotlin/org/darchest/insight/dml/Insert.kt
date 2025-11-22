@@ -25,7 +25,7 @@ class Insert: SqlPrintable {
 		data[0].writeSql(builder, vendor, params)
 		builder.append(" (")
 		val cols = settedColumns()
-		builder.append(Arrays.stream(cols).collect(Collectors.joining(", ")))
+		builder.append(Arrays.stream(cols).map { "\"$it\"" }.collect(Collectors.joining(", ")))
 		builder.append(") VALUES (")
 		val iter = cols.iterator()
 		var col = iter.next()
