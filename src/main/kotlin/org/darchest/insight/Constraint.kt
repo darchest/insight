@@ -25,9 +25,12 @@ class Unique(vararg val columns: TableColumn<*, *>): Constraint() {
     }
 }
 
-class ForeignKey(val columns: List<TableColumn<*, *>>, val foreignTable: Table, val foreignColumns: List<TableColumn<*, *>>): Constraint() {
+class ForeignKey<T: Table>(val columns: List<TableColumn<*, *>>, foreignTableFn: () -> T, foreignColumnsFn: T.() -> List<TableColumn<*, *>>): Constraint() {
 
-    constructor(column: TableColumn<*, *>, foreignTable: Table, foreignColumn: TableColumn<*, *>): this(listOf(column), foreignTable, listOf(foreignColumn))
+    val foreignTable: T = foreignTableFn()
+    val foreignColumns: List<TableColumn<*, *>> = foreignColumnsFn(foreignTable)
+
+    constructor(column: TableColumn<*, *>, foreignTableFn: () -> T, foreignColumnFn: T.() -> TableColumn<*, *>) : this(listOf(column), foreignTableFn, { listOf(foreignColumnFn()) })
 
     override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
         builder.append("FOREIGN KEY (")
