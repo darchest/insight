@@ -39,6 +39,12 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(val name: String, javaClass
 		return SqlTypeConvertersRegistry.sqlToJava(sqlClass, javaClass, resultSet!!, resultSetInd!!) as? javaType?
 	}
 
+	suspend fun getAndSet() {
+		val value = getValue()
+		state = State.NOT_SET
+		invoke(value)
+	}
+
 	operator fun invoke(value: javaType?) {
 		if (state == State.READED)
 			throw RuntimeException("Column is in read mode and can't be setted")

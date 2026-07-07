@@ -6,7 +6,7 @@ import simplevendor.eq
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SelectTest {
+class SelecttTest {
 
     class CommentTable: PostgresTable("comments") {
 

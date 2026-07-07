@@ -32,8 +32,8 @@ inline infix fun<reified J: Any, reified sqlT: PostgresqlType> SqlValue<J, out s
 inline infix fun<reified J: Any, reified sqlT: PostgresqlType> SqlValue<J, out sqlT>.le(right: J?) = PostgresqlComparison(this, ComparisonOperation.Operator.LE, SqlConst(right, J::class.java, this.sqlType))
 
 
-inline infix fun SqlValue<Instant, *>.eq(right: Long) = PostgresqlComparison(this, ComparisonOperation.Operator.EQ, SqlConst(right, Long::class.java, this.sqlType))
-inline infix fun SqlValue<Instant, *>.neq(right: Long) = PostgresqlComparison(this, ComparisonOperation.Operator.NEQ, SqlConst(right, Long::class.java, this.sqlType))
+infix fun SqlValue<Instant, *>.eq(right: Long) = PostgresqlComparison(this, ComparisonOperation.Operator.EQ, SqlConst(right, Long::class.java, this.sqlType))
+infix fun SqlValue<Instant, *>.neq(right: Long) = PostgresqlComparison(this, ComparisonOperation.Operator.NEQ, SqlConst(right, Long::class.java, this.sqlType))
 
 infix fun SqlValue<*, out BooleanType>.and(right: SqlValue<*, out BooleanType>) = PostgresqlLogical(LogicalOperation.Operator.AND, listOf(this, right))
 infix fun SqlValue<*, out BooleanType>.or(right: SqlValue<*, out BooleanType>) = PostgresqlLogical(LogicalOperation.Operator.OR, listOf(this, right))

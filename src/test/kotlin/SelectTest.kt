@@ -52,6 +52,10 @@ class SelectTest {
         val userId by UUIDCol("user_id")
     }
 
+    class TableWithSection: PostgresTable("with_section") {
+        
+    }
+
     @Test
     fun sql_one_table_fields() = runBlocking {
         val tbl = UserTable()
