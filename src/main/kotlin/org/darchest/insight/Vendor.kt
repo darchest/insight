@@ -21,4 +21,6 @@ interface Vendor {
 	fun createComparisonOperation(left: SqlValue<*, *>, op: ComparisonOperation.Operator, right: SqlValue<*, *>): ComparisonOperation<*, *>
 
 	fun getCountExpression(): Expression<Long, *>
+
+	fun getMaxIdentifierLength(): Int = 60
 }
