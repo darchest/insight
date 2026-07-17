@@ -16,12 +16,13 @@ interface SqlValueNotNullGetter<javaType>: SqlValueGetter<javaType> {
 	suspend operator fun invoke(): javaType = getValue()!!
 }
 
-interface SqlValueNullGetter<javaType>: SqlValueGetter<javaType> {
-
-	suspend operator fun invoke(): javaType? = getValue()
-}
-
-open class TableColumn<javaType: Any, sqlT: SqlType>(val name: String, javaClass: Class<javaType>, sqlType: sqlT, val length: Int? = null): SqlValue<javaType, sqlT>(javaClass, sqlType), SqlValueNotNullGetter<javaType> {
+open class TableColumn<javaType: Any, sqlT: SqlType>(
+	val name: String,
+	javaClass: Class<javaType>,
+	sqlType: sqlT,
+	val length: Int? = null,
+	val default: (() -> SqlValue<*, sqlT>?)? = null
+): SqlValue<javaType, sqlT>(javaClass, sqlType), SqlValueNotNullGetter<javaType> {
 
 	var owner: Table? = null
 
@@ -52,8 +53,6 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(val name: String, javaClass
 		state = State.VALUE_SET
 	}
 
-	open fun default(): SqlValue<*, sqlT>? = null
-
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
 		val owner = this.owner ?: throw RuntimeException("Column's owner isn't defined")
 		val pseudo = owner.sqlPseudo
@@ -68,8 +67,7 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(val name: String, javaClass
 		val owner = owner
 		if (owner != null) {
 			val joined = owner.joined
-			if (joined != null)
-				joined.getExpr()?.innerColumns(array)
+            joined?.getExpr()?.innerColumns(array)
 		}
 		array.add(this)
 	}

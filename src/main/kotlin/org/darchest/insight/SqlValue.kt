@@ -15,13 +15,9 @@ abstract class SqlValue<javaType: Any, sqlT: SqlType>(val javaClass: Class<javaT
 	var codeName = ""
 
 	fun fullCodeName(): String {
-		val source = sqlDataSource
-		if (source == null)
-			return codeName
-		val join = source.joined
-		if (join == null)
-			return codeName
-		return join.codeName + codeName
+        val source = sqlDataSource ?: return codeName
+        val join = source.joined ?: return codeName
+        return join.codeName + codeName
 	}
 
 	enum class State { NOT_SET, READED, VALUE_SET, EXPR_SET }
