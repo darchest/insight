@@ -24,7 +24,7 @@ object SqlTypeConvertersRegistry {
 	fun registerConverter(from: Class<out Any>, to: Class<out SqlType>, converter: SqlTypeConverter, force: Boolean = false) {
 		val javaConcrete = converters.getOrPut(from) {  HashMap() }
 		if (!force && javaConcrete.containsKey(to))
-			throw RuntimeException("Already registered")
+			throw RuntimeException("Already registered ($from -> $to)")
 		javaConcrete[to] = converter
 	}
 

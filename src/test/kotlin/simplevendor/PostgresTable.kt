@@ -70,7 +70,6 @@ open class PostgresTable(name: String): Table(name) {
 
 	class BoolCol(name: String): ColDelegate<BoolColumn>(BoolColumn(name))
 
-	class DateCol(name: String): ColDelegate<DateColumn>(DateColumn(name))
 
 	fun <T: PostgresTable> countExpr() = CountExpression()
 

@@ -40,7 +40,7 @@ class CreateTable(val table: Table): SqlPrintable {
 		builder.append(col.name, ' ', col.getSqlStringType())
 		col.length?.apply { builder.append("(", this, ")") }
 		builder.append(" NOT NULL")
-		val def = col.default()
+		val def = col.default?.invoke()
 		if (def != null) {
 			builder.append(" DEFAULT ")
 			builder.append(SqlTypeConvertersRegistry.javaToSql(def.javaClass, def.sqlClass, def.getValue()))
