@@ -77,7 +77,7 @@ class SelecttTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
         """.trimMargin(), sql)
@@ -95,7 +95,7 @@ class SelecttTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
             |WHERE T0."string_col_10" = ?
@@ -117,7 +117,7 @@ class SelecttTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
             |WHERE T0."string_col_10" = ?
@@ -138,7 +138,7 @@ class SelecttTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM public."users" T0
 	        |	INNER JOIN dep_main."comments" T1 ON T1."user_id" = T0."id"
         """.trimMargin(), sql)

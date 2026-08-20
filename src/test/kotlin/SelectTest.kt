@@ -3,6 +3,7 @@ import org.darchest.insight.impl.select
 import simplevendor.PostgresTable
 import simplevendor.PostgresVendor
 import simplevendor.eq
+import simplevendor.gt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -81,7 +82,7 @@ class SelectTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
         """.trimMargin(), sql)
@@ -99,7 +100,7 @@ class SelectTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
             |WHERE T0."string_col_10" = ?
@@ -121,7 +122,7 @@ class SelectTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM "users" T0
 	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
             |WHERE T0."string_col_10" = ?
@@ -142,9 +143,64 @@ class SelectTest {
 
         val (sql, _) = cursor.getSql(PostgresVendor)
         assertEquals("""
-            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."user_id", T1."id"
+            |SELECT T0."id", T0."string_col", T0."string_col_10", T1."id"
             |FROM public."users" T0
 	        |	INNER JOIN dep_main."comments" T1 ON T1."user_id" = T0."id"
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_group_by() = runBlocking {
+        val tbl = UserTable()
+
+        val cursor = select(tbl) {
+            groupBy(tbl.id)
+            fields(tbl.id, tbl.string)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "id", "id", "string_col"
+            |FROM "users"
+            |GROUP BY "id"
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_group_by_having() = runBlocking {
+        val tbl = UserTable()
+        val count = tbl.countExpr<UserTable>()
+
+        val cursor = select(tbl) {
+            groupBy(tbl.string)
+            fields(count)
+            having(count gt 1L)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "string_col", COUNT(1)
+            |FROM "users"
+            |GROUP BY "string_col"
+            |HAVING COUNT(1) > ?
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_group_by_with_join() = runBlocking {
+        val tbl = UserTable()
+
+        val cursor = select(tbl) {
+            groupBy(tbl.id)
+            fields(tbl.comments().id)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T0."id", T1."id"
+            |FROM "users" T0
+	        |	INNER JOIN "comments" T1 ON T1."user_id" = T0."id"
+            |GROUP BY T0."id"
         """.trimMargin(), sql)
     }
 }

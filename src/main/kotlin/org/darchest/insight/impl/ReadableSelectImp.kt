@@ -97,8 +97,8 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 	}
 
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
-		val toSelect = fieldsToSelect()
-		factFields.addAll(allColumnsInValues(toSelect))
+		factFields.clear()
+		factFields.addAll(fieldsToSelect())
 
 		val allUsed = necessaryValues()
 		val allRealUsed = allColumnsInValues(allUsed)
@@ -113,6 +113,8 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 
 		writeJoins(builder, vendor, joins, params)
 		writeWhere(builder, vendor, whereExpr, params)
+		writeGroupBy(builder, vendor, groupBy, params)
+		writeHaving(builder, vendor, havingExpr, params)
 		writeOrder(builder, vendor, orderBy, params)
 		writeLimit(builder, vendor, limit)
 		writeOffset(builder, vendor, offset)
@@ -187,6 +189,22 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		where.writeSql(builder, vendor, params)
 	}
 
+	private suspend fun writeGroupBy(builder: StringBuilder, vendor: Vendor, groupBy: SqlPartsArray<SqlValue<*, *>>, params: MutableList<SqlValue<*, *>>) {
+		if (groupBy.isEmpty())
+			return
+		builder.append("\nGROUP BY ")
+		groupBy.writeSql(builder, vendor, params)
+	}
+
+	private suspend fun writeHaving(builder: StringBuilder, vendor: Vendor, having: SqlValue<*, *>?, params: MutableList<SqlValue<*, *>>) {
+		if (having == null)
+			return
+		if (!vendor.isSqlBoolean(having))
+			throw RuntimeException("Having expr result isn't boolean")
+		builder.append("\nHAVING ")
+		having.writeSql(builder, vendor, params)
+	}
+
 	private suspend fun writeOrder(builder: StringBuilder, vendor: Vendor, order: SqlPartsArray<SortInfo>, params: MutableList<SqlValue<*, *>>) {
 		if (order.isEmpty())
 			return
@@ -240,7 +258,7 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 			if (conn != null)
 				connection = null
 			resultSet = null
-			fields.forEach { f -> f.state = SqlValue.State.NOT_SET }
+			factFields.forEach { f -> f.state = SqlValue.State.NOT_SET }
 		}
 		return readed
 	}
