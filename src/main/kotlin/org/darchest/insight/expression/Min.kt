@@ -1,0 +1,32 @@
+/*
+ * Copyright 2021-2024, Darchest and contributors.
+ * Licensed under the Apache License, Version 2.0
+ */
+
+package org.darchest.insight.expression
+
+import org.darchest.insight.Expression
+import org.darchest.insight.SqlType
+import org.darchest.insight.SqlValue
+import org.darchest.insight.Vendor
+
+class Min<javaType : Any, sqlType : SqlType>(
+    val field: SqlValue<javaType, sqlType>
+): Expression<javaType, sqlType>(field.javaClass, field.sqlType) {
+    override suspend fun writeSql(
+        builder: StringBuilder,
+        vendor: Vendor,
+        params: MutableList<SqlValue<*, *>>
+    ) {
+        builder.append("min(")
+        field.writeSql(builder, vendor, params)
+        builder.append(")")
+    }
+
+    override fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) {
+        super.fillByInnerColumns(array)
+        field.innerColumns(array)
+    }
+}
+
+fun <javaType : Any, sqlType : SqlType> min(field: SqlValue<javaType, sqlType>) = Min(field)
