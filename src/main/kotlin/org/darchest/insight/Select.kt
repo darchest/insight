@@ -14,6 +14,7 @@ interface Select<T: SqlDataSource>: SqlPrintable {
 	var connection: Connection?
 
 	fun groupBy(vararg fields: SqlValue<*, *>): Select<T>
+	fun groupBy(fields: Collection<SqlValue<*, *>>): Select<T>
 	fun fields(vararg fields: SqlValue<*, *>): Select<T>
 	fun fields(fields: Collection<SqlValue<*, *>>): Select<T>
 	fun joins(vararg joins: Any?): Select<T>

@@ -33,6 +33,12 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		return this
 	}
 
+	override fun groupBy(fields: Collection<SqlValue<*, *>>): Select<T> {
+		this.groupBy.clear()
+		this.groupBy.addAll(fields)
+		return this
+	}
+
 	override fun fields(vararg fields: SqlValue<*, *>): Select<T> {
 		return fields(fields.toList())
 	}
