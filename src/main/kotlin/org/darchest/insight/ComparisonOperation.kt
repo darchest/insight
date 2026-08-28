@@ -38,4 +38,9 @@ abstract class ComparisonOperation<javaType: Any, sqlT: SqlType>(val left: SqlVa
 		left.innerColumns(array)
 		right.innerColumns(array)
 	}
+
+	override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+		left.collectReferencedSources(out)
+		right.collectReferencedSources(out)
+	}
 }

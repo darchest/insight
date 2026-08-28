@@ -154,7 +154,7 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		return columns
 	}
 
-	private fun allSourcesByColumns(columns: Collection<SqlValue<*, *>>): Collection<SqlDataSource> {
+	private fun allSourcesByColumns(columns: Collection<SqlValue<*, *>>): MutableList<SqlDataSource> {
 		val sources = mutableListOf<SqlDataSource>(source)
 		for (col in columns) {
 			if (col is TableColumn) {
@@ -166,17 +166,69 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		return sources
 	}
 
-	private fun prepareJoins(sources: Collection<SqlDataSource>): Collection<Join<*>> {
+	private fun prepareJoins(sources: MutableList<SqlDataSource>): Collection<Join<*>> {
+		closeJoinSources(sources)
 		if (sources.size == 1)
 			return mutableListOf()
-		val joins = mutableListOf<Join<*>>()
 		for ((i, src) in sources.withIndex()) {
 			src.sqlPseudo = "T$i"
-			val joined = src.joined
-			if (joined != null)
-				joins.add(joined)
 		}
-		return joins
+		val joins = sources.mapNotNull { it.joined }
+		return orderJoins(joins, sources.toSet())
+	}
+
+	private fun closeJoinSources(sources: MutableList<SqlDataSource>) {
+		var i = 0
+		while (i < sources.size) {
+			val join = sources[i].joined
+			if (join != null) {
+				addSourceIfAbsent(sources, join.owner)
+				val refs = mutableSetOf<SqlDataSource>()
+				join.getExpr()?.collectReferencedSources(refs)
+				refs.forEach { addSourceIfAbsent(sources, it) }
+			}
+			i++
+		}
+	}
+
+	private fun addSourceIfAbsent(sources: MutableList<SqlDataSource>, src: SqlDataSource) {
+		if (!sources.contains(src))
+			sources.add(src)
+	}
+
+	private fun orderJoins(joins: List<Join<*>>, sourceSet: Set<SqlDataSource>): List<Join<*>> {
+		fun deps(join: Join<*>): Set<SqlDataSource> {
+			val d = mutableSetOf<SqlDataSource>()
+			d.add(join.owner)
+			join.getExpr()?.collectReferencedSources(d)
+			val joined = join()
+			d.remove(joined)
+			val unknown = d.filter { it !in sourceSet }
+			if (unknown.isNotEmpty()) {
+				throw IllegalStateException(
+					"JOIN ${joined.sqlName} ON references tables not present in FROM: ${unknown.joinToString { it.sqlName }}"
+				)
+			}
+			return d
+		}
+
+		val available = mutableSetOf<SqlDataSource>(source)
+		val remaining = joins.toMutableList()
+		val result = mutableListOf<Join<*>>()
+		while (remaining.isNotEmpty()) {
+			val idx = remaining.indexOfFirst { deps(it).all { dep -> dep in available } }
+			if (idx < 0) {
+				val names = remaining.joinToString { j ->
+					val t = j()
+					"${t.sqlName}(${t.sqlPseudo})"
+				}
+				throw IllegalStateException("Cannot order JOINs (cyclic or unresolved dependency): $names")
+			}
+			val join = remaining.removeAt(idx)
+			result.add(join)
+			available.add(join())
+		}
+		return result
 	}
 
 	private suspend fun writeJoins(builder: StringBuilder, vendor: Vendor, joins: Collection<Join<*>>, params: MutableList<SqlValue<*, *>>) {

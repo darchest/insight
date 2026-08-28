@@ -6,6 +6,7 @@
 package org.darchest.insight.expression
 
 import org.darchest.insight.Expression
+import org.darchest.insight.SqlDataSource
 import org.darchest.insight.SqlType
 import org.darchest.insight.SqlValue
 import org.darchest.insight.Vendor
@@ -26,6 +27,10 @@ class Min<javaType : Any, sqlType : SqlType>(
     override fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) {
         super.fillByInnerColumns(array)
         field.innerColumns(array)
+    }
+
+    override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+        field.collectReferencedSources(out)
     }
 }
 

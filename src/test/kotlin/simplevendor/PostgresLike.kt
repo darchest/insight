@@ -5,6 +5,7 @@
 
 package simplevendor
 
+import org.darchest.insight.SqlDataSource
 import org.darchest.insight.SqlValue
 import org.darchest.insight.Vendor
 
@@ -14,6 +15,11 @@ class PostgresLike(val left: SqlValue<*, *>, val right: SqlValue<*, *>): SqlValu
         left.writeSql(builder, vendor, params)
         builder.append(" LIKE ")
         right.writeSql(builder, vendor, params)
+    }
+
+    override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+        left.collectReferencedSources(out)
+        right.collectReferencedSources(out)
     }
 }
 
@@ -28,5 +34,10 @@ class PostgresILike(val left: SqlValue<*, *>, val right: SqlValue<*, *>): SqlVal
     override fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) {
         left.innerColumns(array)
         right.innerColumns(array)
+    }
+
+    override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+        left.collectReferencedSources(out)
+        right.collectReferencedSources(out)
     }
 }

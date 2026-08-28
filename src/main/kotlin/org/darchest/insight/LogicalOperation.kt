@@ -42,4 +42,8 @@ abstract class LogicalOperation<javaType: Any, sqlT: SqlType>(val operator: Oper
 	override fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) {
 		values.forEach { it.innerColumns(array) }
 	}
+
+	override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+		values.forEach { it.collectReferencedSources(out) }
+	}
 }

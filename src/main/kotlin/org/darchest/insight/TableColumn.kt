@@ -72,4 +72,8 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(
 		array.add(this)
 	}
 
+	override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+		owner?.let { out.add(it) }
+	}
+
 }

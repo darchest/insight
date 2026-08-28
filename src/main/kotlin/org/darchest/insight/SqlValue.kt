@@ -55,4 +55,6 @@ abstract class SqlValue<javaType: Any, sqlT: SqlType>(val javaClass: Class<javaT
 	}
 
 	open fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) { }
+
+	open fun collectReferencedSources(out: MutableSet<SqlDataSource>) { }
 }

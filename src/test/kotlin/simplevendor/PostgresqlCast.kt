@@ -5,6 +5,7 @@
 
 package simplevendor
 
+import org.darchest.insight.SqlDataSource
 import org.darchest.insight.SqlValue
 import org.darchest.insight.Vendor
 
@@ -18,5 +19,9 @@ class PostgresqlCast<SqlT: PostgresqlType>(val from: SqlValue<*, *>, val toType:
 
     override fun fillByInnerColumns(array: MutableCollection<SqlValue<*, *>>) {
         from.innerColumns(array)
+    }
+
+    override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+        from.collectReferencedSources(out)
     }
 }

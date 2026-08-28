@@ -11,6 +11,10 @@ abstract class LocalExpression<javaType: Any>(javaClass: Class<javaType>, privat
 		array.addAll(innerColumns)
 	}
 
+	override fun collectReferencedSources(out: MutableSet<SqlDataSource>) {
+		innerColumns.forEach { it.collectReferencedSources(out) }
+	}
+
 	override suspend fun getValue(): javaType? = fn()
 
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
