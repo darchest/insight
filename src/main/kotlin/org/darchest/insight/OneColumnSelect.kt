@@ -5,5 +5,11 @@
 
 package org.darchest.insight
 
-interface OneColumnSelect<T: SqlDataSource>: Select<T> {
+/**
+ * SELECT with exactly one field in the select list.
+ * Basis for scalar subquery expressions ([org.darchest.insight.expression.SelectExpression]).
+ */
+interface OneColumnSelect<T : SqlDataSource> : Select<T> {
+	/** The single field of the select list. */
+	fun column(): SqlValue<*, *>
 }

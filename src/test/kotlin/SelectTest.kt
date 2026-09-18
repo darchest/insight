@@ -1,5 +1,11 @@
 import kotlinx.coroutines.runBlocking
+import org.darchest.insight.alias
+import org.darchest.insight.asDataSource
+import org.darchest.insight.expression.asExpression
+import org.darchest.insight.expression.subSelect
+import org.darchest.insight.impl.oneColumnSelect
 import org.darchest.insight.impl.select
+import org.darchest.insight.impl.selectQuery
 import simplevendor.PostgresTable
 import simplevendor.PostgresVendor
 import simplevendor.eq
@@ -287,5 +293,133 @@ class SelectTest {
         val ex = runCatching { cursor.getSql(PostgresVendor) }.exceptionOrNull()
         assertIs<IllegalStateException>(ex)
         assertTrue(ex.message!!.contains("Cannot order JOINs"))
+    }
+
+    @Test
+    fun sql_scalar_subquery_in_where() = runBlocking {
+        val users = UserTable()
+        val comments = CommentTable()
+
+        val sub = oneColumnSelect(comments) {
+            fields(comments.userId)
+            limit(1)
+        }
+
+        val cursor = select(users) {
+            fields(users.id)
+            where(users.id eq sub.asExpression(users.id))
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "id"
+            |FROM "users"
+            |WHERE "id" = (SELECT "user_id"
+            |FROM "comments"
+            |LIMIT 1)
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_scalar_subquery_in_fields() = runBlocking {
+        val users = UserTable()
+        val comments = CommentTable()
+
+        val cursor = select(users) {
+            fields(
+                users.id,
+                oneColumnSelect(comments) {
+                    fields(comments.id)
+                    limit(1)
+                }.asExpression(users.id).alias("tags")
+            )
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "id", (SELECT "id"
+            |FROM "comments"
+            |LIMIT 1) AS "tags"
+            |FROM "users"
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_scalar_subquery_via_subSelect() = runBlocking {
+        val users = UserTable()
+        val comments = CommentTable()
+
+        val cursor = select(users) {
+            fields(users.id)
+            where(users.id eq subSelect(oneColumnSelect(comments) {
+                fields(comments.userId)
+                limit(1)
+            }, users.id))
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "id"
+            |FROM "users"
+            |WHERE "id" = (SELECT "user_id"
+            |FROM "comments"
+            |LIMIT 1)
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_derived_table_from_select() = runBlocking {
+        val users = UserTable()
+        val inner = selectQuery(users) {
+            fields(users.id, users.string)
+        }
+        val derived = inner.asDataSource("u")
+
+        val cursor = select(derived) {
+            fields(derived.column("id"), derived.column("string_col"))
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT "id", "string_col"
+            |FROM (SELECT "id", "string_col"
+            |FROM "users") u
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_derived_table_join() = runBlocking {
+        val users = UserTable()
+        val comments = CommentTable()
+        val inner = selectQuery(comments) {
+            fields(comments.id, comments.userId)
+        }
+        val derived = inner.asDataSource("c")
+        val join = org.darchest.insight.Join(users) { derived }
+        join.expr { join().column(comments.userId) eq users.id }
+
+        val cursor = select(users) {
+            fields(users.id, join().column(comments.id))
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T0."id", T1."id"
+            |FROM "users" T0
+	        |	INNER JOIN (SELECT "id", "user_id"
+            |FROM "comments") T1 ON T1."user_id" = T0."id"
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun one_column_select_rejects_multiple_fields() = runBlocking {
+        val users = UserTable()
+        val ex = runCatching {
+            oneColumnSelect(users) {
+                fields(users.id, users.string)
+            }
+        }.exceptionOrNull()
+        assertIs<IllegalStateException>(ex)
+        assertTrue(ex.message!!.contains("exactly one field"))
     }
 }

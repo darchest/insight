@@ -175,6 +175,18 @@ object PostgresVendor: Vendor {
         builder.append("\"");
     }
 
+    override fun writeSqlSelectColumnName(column: SelectColumn<*, *>, builder: StringBuilder) {
+        builder.append("\"")
+        builder.append(column.name)
+        builder.append("\"")
+    }
+
+    override fun writeSqlAlias(alias: String, builder: StringBuilder) {
+        builder.append("\"")
+        builder.append(alias)
+        builder.append("\"")
+    }
+
     override fun createLogicalOperation(op: LogicalOperation.Operator, values: Collection<SqlValue<*, *>>): LogicalOperation<*, *> {
         return PostgresqlLogical(op, values)
     }

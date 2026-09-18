@@ -15,6 +15,8 @@ interface Vendor {
 
 	fun writeSqlDataSource(dataSource: SqlDataSource, builder: StringBuilder)
 	fun writeSqlColumnName(column: TableColumn<*, *>, builder: StringBuilder)
+	fun writeSqlSelectColumnName(column: SelectColumn<*, *>, builder: StringBuilder)
+	fun writeSqlAlias(alias: String, builder: StringBuilder)
 
 	fun createLogicalOperation(op: LogicalOperation.Operator, values: Collection<SqlValue<*, *>>): LogicalOperation<*, *>
 
