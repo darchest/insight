@@ -5,11 +5,7 @@
 
 package org.darchest.insight.expression
 
-import org.darchest.insight.Expression
-import org.darchest.insight.SqlDataSource
-import org.darchest.insight.SqlType
-import org.darchest.insight.SqlValue
-import org.darchest.insight.Vendor
+import org.darchest.insight.*
 
 class Max<javaType : Any, sqlType : SqlType>(
     val field: SqlValue<javaType, sqlType>
@@ -33,5 +29,3 @@ class Max<javaType : Any, sqlType : SqlType>(
         field.collectReferencedSources(out)
     }
 }
-
-fun <javaType : Any, sqlType : SqlType> max(field: SqlValue<javaType, sqlType>) = Max(field)

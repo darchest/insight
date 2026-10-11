@@ -76,4 +76,7 @@ open class TableColumn<javaType: Any, sqlT: SqlType>(
 		owner?.let { out.add(it) }
 	}
 
+	override fun toString(): String {
+		return "${fullCodeName()}<${javaClass.simpleName}, ${sqlClass.simpleName}>"
+	}
 }

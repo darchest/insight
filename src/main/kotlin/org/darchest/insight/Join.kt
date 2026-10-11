@@ -27,6 +27,8 @@ class Join<T: SqlDataSource>(val owner: SqlDataSource, private val tableFactory:
 		return this
 	}
 
+	fun getType() = type
+
 	fun expr(expr: () -> SqlValue<*, *>?): Join<T> {
 		this.expr = expr()
 		return this

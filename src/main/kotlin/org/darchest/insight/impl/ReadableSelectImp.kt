@@ -25,6 +25,8 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 
 	private val factFields = SqlPartsArray<SqlValue<*, *>>()
 
+	override var smartJoinTypes = true
+
 	override fun source() = source
 
 	override fun groupBy(vararg fields: SqlValue<*, *>): Select<T> {
@@ -196,17 +198,21 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 			sources.add(src)
 	}
 
+	private fun joinDependencies(join: Join<*>): Set<SqlDataSource> {
+		val d = mutableSetOf<SqlDataSource>()
+		d.add(join.owner)
+		join.getExpr()?.collectReferencedSources(d)
+		d.remove(join())
+		return d
+	}
+
 	private fun orderJoins(joins: List<Join<*>>, sourceSet: Set<SqlDataSource>): List<Join<*>> {
 		fun deps(join: Join<*>): Set<SqlDataSource> {
-			val d = mutableSetOf<SqlDataSource>()
-			d.add(join.owner)
-			join.getExpr()?.collectReferencedSources(d)
-			val joined = join()
-			d.remove(joined)
+			val d = joinDependencies(join)
 			val unknown = d.filter { it !in sourceSet }
 			if (unknown.isNotEmpty()) {
 				throw IllegalStateException(
-					"JOIN ${joined.sqlName} ON references tables not present in FROM: ${unknown.joinToString { it.sqlName }}"
+					"JOIN ${join().sqlName} ON references tables not present in FROM: ${unknown.joinToString { it.sqlName }}"
 				)
 			}
 			return d
@@ -231,10 +237,40 @@ class ReadableSelectImp<T: SqlDataSource>(val source: T): ReadableSelect<T> {
 		return result
 	}
 
-	private suspend fun writeJoins(builder: StringBuilder, vendor: Vendor, joins: Collection<Join<*>>, params: MutableList<SqlValue<*, *>>) {
+	private fun effectiveJoinTypes(joins: List<Join<*>>): Map<Join<*>, Join.Type> {
+		val joinByTable = joins.associateBy { it() }
+		val effective = linkedMapOf<Join<*>, Join.Type>()
 		for (join in joins) {
-			builder.append("\n\t")
-			join.writeSql(builder, vendor, params)
+			var t = join.getType()
+			if (t == Join.Type.INNER) {
+				val dependsOnLeft = joinDependencies(join).any { dep ->
+					val depJoin = joinByTable[dep]
+					val depType = depJoin?.let { effective[it] ?: it.getType() }
+					depType == Join.Type.LEFT
+				}
+				if (dependsOnLeft)
+					t = Join.Type.LEFT
+			}
+			effective[join] = t
+		}
+		return effective
+	}
+
+	private suspend fun writeJoins(builder: StringBuilder, vendor: Vendor, joins: Collection<Join<*>>, params: MutableList<SqlValue<*, *>>) {
+		val joinList = joins.toList()
+		val originalTypes = joinList.associateWith { it.getType() }
+		try {
+			if (smartJoinTypes) {
+				val effective = effectiveJoinTypes(joinList)
+				for (join in joinList)
+					join.type(effective.getValue(join))
+			}
+			for (join in joinList) {
+				builder.append("\n\t")
+				join.writeSql(builder, vendor, params)
+			}
+		} finally {
+			originalTypes.forEach { (join, type) -> join.type(type) }
 		}
 	}
 

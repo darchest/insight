@@ -13,6 +13,8 @@ interface Select<T: SqlDataSource>: SqlPrintable {
 
 	var connection: Connection?
 
+	var smartJoinTypes: Boolean
+
 	fun groupBy(vararg fields: SqlValue<*, *>): Select<T>
 	fun groupBy(fields: Collection<SqlValue<*, *>>): Select<T>
 	fun fields(vararg fields: SqlValue<*, *>): Select<T>

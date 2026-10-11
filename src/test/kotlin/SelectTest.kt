@@ -1,4 +1,5 @@
 import kotlinx.coroutines.runBlocking
+import org.darchest.insight.Join
 import org.darchest.insight.impl.select
 import simplevendor.PostgresTable
 import simplevendor.PostgresVendor
@@ -287,5 +288,62 @@ class SelectTest {
         val ex = runCatching { cursor.getSql(PostgresVendor) }.exceptionOrNull()
         assertIs<IllegalStateException>(ex)
         assertTrue(ex.message!!.contains("Cannot order JOINs"))
+    }
+
+    @Test
+    fun sql_left_parent_promotes_inner_child() = runBlocking {
+        val tbl = UserTable()
+        tbl.comments.type(Join.Type.LEFT)
+
+        val cursor = select(tbl) {
+            fields(tbl.comments().tags().id, tbl.comments().id)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T1."id", T2."id"
+            |FROM "users" T0
+	        |	LEFT JOIN "comments" T2 ON T2."user_id" = T0."id"
+	        |	LEFT JOIN "tags" T1 ON T1."comment_id" = T2."id"
+        """.trimMargin(), sql)
+        assertEquals(Join.Type.LEFT, tbl.comments.getType())
+        assertEquals(Join.Type.INNER, tbl.comments().tags.getType())
+    }
+
+    @Test
+    fun sql_left_parent_does_not_promote_child_when_smart_join_types_off() = runBlocking {
+        val tbl = UserTable()
+        tbl.comments.type(Join.Type.LEFT)
+
+        val cursor = select(tbl) {
+            smartJoinTypes = false
+            fields(tbl.comments().tags().id, tbl.comments().id)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T1."id", T2."id"
+            |FROM "users" T0
+	        |	LEFT JOIN "comments" T2 ON T2."user_id" = T0."id"
+	        |	INNER JOIN "tags" T1 ON T1."comment_id" = T2."id"
+        """.trimMargin(), sql)
+    }
+
+    @Test
+    fun sql_left_child_does_not_promote_inner_parent() = runBlocking {
+        val tbl = UserTable()
+        tbl.comments().tags.type(Join.Type.LEFT)
+
+        val cursor = select(tbl) {
+            fields(tbl.comments().tags().id, tbl.comments().id)
+        }
+
+        val (sql, _) = cursor.getSql(PostgresVendor)
+        assertEquals("""
+            |SELECT T1."id", T2."id"
+            |FROM "users" T0
+	        |	INNER JOIN "comments" T2 ON T2."user_id" = T0."id"
+	        |	LEFT JOIN "tags" T1 ON T1."comment_id" = T2."id"
+        """.trimMargin(), sql)
     }
 }
