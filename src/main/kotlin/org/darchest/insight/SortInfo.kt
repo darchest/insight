@@ -5,7 +5,7 @@
 
 package org.darchest.insight
 
-class SortInfo(val expr: SqlValue<*, *>, val direction: Direction): SqlPrintable {
+class SortInfo(val expr: SqlValue<*, *>, val direction: Direction): SqlToken {
 	enum class Direction { ASC, DESC }
 
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {

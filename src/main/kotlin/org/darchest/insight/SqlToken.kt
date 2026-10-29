@@ -5,7 +5,7 @@
 
 package org.darchest.insight
 
-interface SqlPrintable {
+interface SqlToken {
 
 	suspend fun getSql(vendor: Vendor): Pair<String, MutableList<SqlValue<*, *>>> {
 		val builder = StringBuilder(1024)

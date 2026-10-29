@@ -8,7 +8,7 @@ package org.darchest.insight.ddl
 import mu.KotlinLogging
 import org.darchest.insight.*
 
-class CreateTable(val table: Table): SqlPrintable {
+class CreateTable(val table: Table): SqlToken {
 
 	private val logger = KotlinLogging.logger {}
 

@@ -8,7 +8,7 @@ package org.darchest.insight.dml
 import mu.KotlinLogging
 import org.darchest.insight.*
 
-class Delete(val table: Table): SqlPrintable {
+class Delete(val table: Table): SqlToken {
 	private val logger = KotlinLogging.logger {}
 
 	private var whereExpr: SqlValue<*, *>? = null

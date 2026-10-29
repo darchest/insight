@@ -10,7 +10,7 @@ import org.darchest.insight.*
 import java.util.*
 import java.util.stream.Collectors
 
-class Insert: SqlPrintable {
+class Insert: SqlToken {
 	private val logger = KotlinLogging.logger {}
 
 	private val data = mutableListOf<Table>()

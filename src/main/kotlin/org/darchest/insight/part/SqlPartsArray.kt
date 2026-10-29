@@ -5,11 +5,11 @@
 
 package org.darchest.insight.part
 
-import org.darchest.insight.SqlPrintable
+import org.darchest.insight.SqlToken
 import org.darchest.insight.SqlValue
 import org.darchest.insight.Vendor
 
-class SqlPartsArray<T: SqlPrintable>(): ArrayList<T>(), SqlPrintable {
+class SqlPartsArray<T: SqlToken>(): ArrayList<T>(), SqlToken {
 
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
 		if (isEmpty())

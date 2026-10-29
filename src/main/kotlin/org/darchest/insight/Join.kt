@@ -5,7 +5,7 @@
 
 package org.darchest.insight
 
-class Join<T: SqlDataSource>(val owner: SqlDataSource, private val tableFactory: () -> T): SqlPrintable {
+class Join<T: SqlDataSource>(val owner: SqlDataSource, private val tableFactory: () -> T): SqlToken {
 	enum class Type {
 		INNER,
 		LEFT,

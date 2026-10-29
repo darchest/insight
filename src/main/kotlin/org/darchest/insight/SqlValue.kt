@@ -7,7 +7,7 @@ package org.darchest.insight
 
 import java.sql.ResultSet
 
-abstract class SqlValue<javaType: Any, sqlT: SqlType>(val javaClass: Class<javaType>, val sqlType: sqlT): SqlPrintable {
+abstract class SqlValue<javaType: Any, sqlT: SqlType>(val javaClass: Class<javaType>, val sqlType: sqlT): SqlToken {
 
 	val sqlClass: Class<out sqlT> = sqlType::class.java
 

@@ -7,7 +7,7 @@ package org.darchest.insight.ddl
 
 import org.darchest.insight.*
 
-class DropTable(val table: Table): SqlPrintable {
+class DropTable(val table: Table): SqlToken {
 
 	override suspend fun writeSql(builder: StringBuilder, vendor: Vendor, params: MutableList<SqlValue<*, *>>) {
 		builder.append("DELETE TABLE ")

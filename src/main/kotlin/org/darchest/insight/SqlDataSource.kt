@@ -5,7 +5,7 @@
 
 package org.darchest.insight
 
-abstract class SqlDataSource(val sqlName: String): SqlPrintable {
+abstract class SqlDataSource(val sqlName: String): SqlToken {
 	var sqlPseudo: String? = null
 	var joined: Join<*>? = null
 

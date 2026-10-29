@@ -5,7 +5,7 @@
 
 package org.darchest.insight
 
-abstract class Index(vararg val columns: SqlValue<*, *>): SqlPrintable {
+abstract class Index(vararg val columns: SqlValue<*, *>): SqlToken {
 
     abstract val unique: Boolean
 

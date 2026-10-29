@@ -8,7 +8,7 @@ package org.darchest.insight
 import org.darchest.insight.part.SqlPartsArray
 import java.sql.Connection
 
-interface Select<T: SqlDataSource>: SqlPrintable {
+interface Select<T: SqlDataSource>: SqlToken {
 	fun source(): T
 
 	var connection: Connection?
